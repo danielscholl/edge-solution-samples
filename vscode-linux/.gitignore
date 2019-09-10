@@ -1,0 +1,9 @@
+**/bin
+**/obj
+**/out
+build
+.env
+.envrc
+logs
+.config
+config

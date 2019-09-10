@@ -1,0 +1,24 @@
+{
+  "name": "edgesolution",
+  "version": "1.0.0",
+  "description": "Task Runner",
+  "scripts": {
+    "setup": "sudo iotedgehubdev setup -c $(az iot hub device-identity show-connection-string --hub-name $HUB --device-id $DEVICE -otsv)",
+    "build:debug": "docker build --rm -f modules/filterModule/Dockerfile.amd64.debug -t localhost:5000/filtermodule:0.0.1-amd64.debug ./modules/filterModule",
+    "build": "docker build --rm -f modules/filterModule/Dockerfile.amd64 -t localhost:5000/filtermodule:0.0.1-amd64 ./modules/filterModule",
+    "genconfig": "docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}:/home/iotedge microsoft/iotedgedev iotedgedev genconfig -f deployment.template.json",
+    "genconfig:debug": "docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}:/home/iotedge microsoft/iotedgedev iotedgedev genconfig -f deployment.debug.template.json",
+    "prestart": "npm run genconfig && npm run build",
+    "start": "sudo iotedgehubdev start -d config/deployment.amd64.json -v",
+    "preattach": "npm run genconfig:debug && npm run build:debug",
+    "attach": "sudo iotedgehubdev start -d config/deployment.debug.amd64.json -v",
+    "prelaunch2": "npm run build:debug",
+    "launch": "sudo EdgeHubConnectionString=$(iotedgehubdev modulecred -m filterModule|cut -c 25-) iotedgehubdev start -i 'input1'",
+    "launch:check": "curl --header \"Content-Type: application/json\" --request POST --data '{\"inputName\": \"input1\",\"data\":\"hello world\"}' http://localhost:53000/api/v1/messages",
+    "stop": "iotedgehubdev stop",
+    "clean": "docker rmi filtermodule:0.0.1 && cd modules/filterModule && dotnet clean",
+    "clean:debug": "docker rmi filtermodule:0.0.1-debug && cd modules/filterModule && dotnet clean"
+  },
+  "author": "",
+  "license": "MIT"
+}
